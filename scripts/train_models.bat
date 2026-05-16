@@ -1,20 +1,21 @@
 @echo off
 echo Starting Weekly ML Model Training...
 
-:: Change directory to the absolute path of the project workspace
-cd /d "c:\Users\mjay2\Desktop\Learn\Excercises\ML-AI"
+:: %~dp0 resolves to the folder this .bat file lives in (the scripts/ folder)
+:: Navigate one level up to the project root
+cd /d "%~dp0.."
 
-:: Execute the training script using the absolute path to your Python interpreter
+:: Use 'python' from your activated virtual environment or system PATH
 echo Training Fictometer Model...
-"C:\Python313\python.exe" "fictometer\scripts\trainmodel.py"
+python "fictometer\scripts\trainmodel.py"
 
 echo Training Spam Classifier Models...
-"C:\Python313\python.exe" "spamclassifier\scripts\trainmodel.py"
+python "spamclassifier\scripts\trainmodel.py"
 
 echo Training Category Predictor (Word2Vec + ANN)...
-"C:\Python313\python.exe" "categorypredictor\scripts\trainmodel_word2vec.py"
+python "categorypredictor\scripts\trainmodel_word2vec.py"
 
 echo Training Category Predictor (ELMo + ANN)...
-"C:\Python313\python.exe" "categorypredictor\scripts\trainmodel_elmo.py"
+python "categorypredictor\scripts\trainmodel_elmo.py"
 
 echo Training Complete.

@@ -159,7 +159,7 @@ A Windows Batch script is provided to retrain all ML models automatically via th
 
 ### Register the weekly task (run once in PowerShell):
 ```powershell
-SchTasks /Create /SC WEEKLY /D SUN /TN "WeeklyMLTraining" /TR "c:\Users\mjay2\Desktop\Learn\Excercises\ML-AI\scripts\train_models.bat" /ST 02:00
+SchTasks /Create /SC WEEKLY /D SUN /TN "WeeklyMLTraining" /TR "C:\path\to\ML-AI\scripts\train_models.bat" /ST 02:00
 ```
 
 This will silently retrain the Fictometer, Spam Classifier, and both Category Predictor models every **Sunday at 2:00 AM**, keeping your models up-to-date.
