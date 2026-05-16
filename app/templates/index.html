@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tools Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 0.8s ease-out both;
+        }
+
+        /* Staggered animation delays for cards */
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+        .card:nth-child(6) { animation-delay: 0.6s; }
+        .card:nth-child(7) { animation-delay: 0.7s; }
+        .card:nth-child(8) { animation-delay: 0.8s; }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-desc {
+            color: var(--text-muted);
+            font-size: 1rem;
+            flex-grow: 1;
+        }
+
+        .card-action {
+            margin-top: 1.5rem;
+            color: var(--primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card:hover .card-action {
+            color: #60a5fa;
+        }
+
+        .card-action::after {
+            content: '→';
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .card-action::after {
+            transform: translateX(5px);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>AI Tools Hub</h1>
+        <p>Select a machine learning or AI action to get started</p>
+    </div>
+
+    <div class="grid">
+        <a href="/wordcounter" class="card">
+            <div class="card-icon">📊</div>
+            <h2 class="card-title">Word Counter</h2>
+            <p class="card-desc">Count words, characters, and perform basic text analysis.</p>
+            <div class="card-action">Launch Tool</div>
+        </a>
+
+        <a href="/admissionchatbot" class="card">
+            <div class="card-icon">💬</div>
+            <h2 class="card-title">Admission Chatbot</h2>
+            <p class="card-desc">Automated conversational agent for university admissions.</p>
+            <div class="card-action">Launch Tool</div>
+        </a>
+
+        <a href="/fictometer" class="card">
+            <div class="card-icon">📖</div>
+            <h2 class="card-title">Fictometer</h2>
+            <p class="card-desc">Analyze text to determine if it is fiction or non-fiction.</p>
+            <div class="card-action">Launch Tool</div>
+        </a>
+
+        <a href="/intentdetector" class="card">
+            <div class="card-icon">🎯</div>
+            <h2 class="card-title">Intent Detector</h2>
+            <p class="card-desc">Identify the primary intent behind user text inputs.</p>
+            <div class="card-action">Launch Tool</div>
+        </a>
+
+        <a href="/keywordextractor" class="card">
+            <div class="card-icon">🔑</div>
+            <h2 class="card-title">Keyword Extractor</h2>
+            <p class="card-desc">Extract the most important keywords from any document.</p>
+            <div class="card-action">Launch Tool</div>
+        </a>
+
+        <a href="/posvisualizer" class="card">
+            <div class="card-icon">🧩</div>
+            <h2 class="card-title">POS Visualizer</h2>
+            <p class="card-desc">Visualize parts of speech tags in a given sentence.</p>
+            <div class="card-action">Launch Tool</div>
+        </a>
+
+        <a href="/spamclassifier" class="card">
+            <div class="card-icon">🚫</div>
+            <h2 class="card-title">Spam Classifier</h2>
+            <p class="card-desc">Detect whether a message is spam or legitimate.</p>
+            <div class="card-action">Launch Tool</div>
+        </a>
+
+        <a href="/wordsimilarity" class="card">
+            <div class="card-icon">🔗</div>
+            <h2 class="card-title">Word Similarity</h2>
+            <p class="card-desc">Calculate semantic similarity between different words.</p>
+            <div class="card-action">Launch Tool</div>
+        </a>
+
+        <a href="/categorypredictor" class="card">
+            <div class="card-icon">📂</div>
+            <h2 class="card-title">Category Predictor</h2>
+            <p class="card-desc">ANN trained on the Brown Corpus to classify text using Word2Vec or ELMo embeddings.</p>
+            <div class="card-action">Launch Tool</div>
+        </a>
+    </div>
+
+</body>
+</html>

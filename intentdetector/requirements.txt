@@ -1,0 +1,2 @@
+thefuzz>=0.20.0
+Levenshtein>=0.23.0

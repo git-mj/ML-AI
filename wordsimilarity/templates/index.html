@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI Word Similarity</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+</head>
+<body class="container">
+    <h1 style="margin-top:20px">Contextual Word Similarity</h1>
+    <article>
+        <form method="POST">
+            <label>Sentence 1
+                <input type="text" name="sent1" value="{{ sent1 }}" required>
+            </label>
+            <label>Sentence 2
+                <input type="text" name="sent2" value="{{ sent2 }}" required>
+            </label>
+            <label>Target Word
+                <input type="text" name="word" value="{{ word }}" required>
+            </label>
+            <button type="submit">Analyze Embedding Distance</button>
+        </form>
+    </article>
+
+    {% if error %}
+        <mark style="background: #ff5555; color: white; display: block; padding: 10px; border-radius: 5px;">
+            {{ error }}
+        </mark>
+    {% endif %}
+
+    {% if result is not none %}
+        <ins style="display: block; padding: 20px; margin-top: 20px; text-decoration: none; background: #f0f8ff;">
+            <h3>Similarity Score: {{ (result * 100)|round(2) }}%</h3>
+            <p>The model perceives the word <strong>"{{ word }}"</strong> to be 
+            {{ "similar" if result > 0.7 else "different" }} in these contexts.</p>
+        </ins>
+    {% endif %}
+</body>
+</html>

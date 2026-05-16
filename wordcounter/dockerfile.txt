@@ -1,0 +1,27 @@
+# Use a slim Python image for a smaller footprint
+FROM python:3.11-slim
+
+# Set security environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Create a non-root user for security
+RUN adduser --disabled-password appuser
+WORKDIR /home/appuser
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the application code
+COPY . .
+
+# Set ownership to the non-root user
+RUN chown -R appuser:appuser /home/appuser
+USER appuser
+
+# Expose the Flask port
+EXPOSE 5000
+
+# Run the app using Gunicorn (Production-grade server)
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "run:app"]

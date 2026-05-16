@@ -1,0 +1,41 @@
+name: NLP Application Tests
+
+# 1. Trigger the workflow on pushes and pull requests to the main branch
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+# 2. Define what the server should do
+jobs:
+  test:
+    runs-on: ubuntu-latest # Spins up a fresh Linux machine
+
+    steps:
+    # Step A: Copy your repository code onto the server
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Step B: Install Python
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+        cache: "pip" # Speeds up future runs by caching dependencies
+
+    # Step C: Install your project dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Install the main app dependencies
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # Install testing specific tools
+        pip install pytest pytest-mock
+
+    # Step D: Run the tests!
+    - name: Run unit tests with pytest
+      run: |
+        # We use a custom marker here to skip the slow, heavy integration tests
+        # so you don't download the 400MB ELMo model on every tiny code push.
+        pytest -v -m "not integration"

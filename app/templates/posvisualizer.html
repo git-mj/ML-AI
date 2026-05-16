@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS Visualizer</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            align-self: flex-start;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .result-box {
+            line-height: 2;
+            font-size: 1.2rem;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: 1rem;
+            background: #fff;
+        }
+
+        .legend {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .pos-Noun { color: #3b82f6; font-weight: bold; }
+        .pos-Verb { color: #ef4444; font-weight: bold; }
+        .pos-Adjective { color: #22c55e; font-weight: bold; }
+        .pos-Adverb { color: #a855f7; font-weight: bold; }
+        .pos-Pronoun { color: #f97316; font-weight: bold; }
+        .pos-Other { color: #475569; }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="/" class="back-link">&larr; Back to Dashboard</a>
+
+    <h1>🧩 Part of Speech (POS) Visualizer</h1>
+    <p>Analyze text to find parts of speech and display them with color codes.</p>
+
+    <div class="container">
+        <label for="inputText"><strong>Enter text to analyze:</strong></label>
+        <textarea id="inputText" placeholder="Type or paste a sentence here..."></textarea>
+
+        <button id="analyzeBtn">Analyze Text</button>
+
+        <div id="errorMessage" class="error"></div>
+        
+        <div id="outputArea" style="display: none;">
+            <h3>Result:</h3>
+            <div class="result-box">
+                <div class="legend">
+                    <strong>Legend:</strong> 
+                    <span class="pos-Noun" style="margin-right: 15px;">Noun</span>
+                    <span class="pos-Verb" style="margin-right: 15px;">Verb</span>
+                    <span class="pos-Adjective" style="margin-right: 15px;">Adjective</span>
+                    <span class="pos-Adverb" style="margin-right: 15px;">Adverb</span>
+                    <span class="pos-Pronoun" style="margin-right: 15px;">Pronoun</span>
+                </div>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const inputText = document.getElementById('inputText');
+        const outputArea = document.getElementById('outputArea');
+        const resultContent = document.getElementById('resultContent');
+        const errorMessage = document.getElementById('errorMessage');
+
+        analyzeBtn.addEventListener('click', async () => {
+            const text = inputText.value.trim();
+
+            errorMessage.textContent = '';
+            outputArea.style.display = 'none';
+
+            if (!text) {
+                errorMessage.textContent = 'Please enter some text first.';
+                return;
+            }
+
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'Analyzing...';
+
+            try {
+                const response = await fetch('/api/v1/analyze_pos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    const taggedWords = result.data.tagged_words;
+                    let htmlContent = '';
+                    
+                    taggedWords.forEach(item => {
+                        const word = item[0];
+                        const tag = item[1];
+                        const category = item[2];
+                        
+                        htmlContent += `<span class="pos-${category}" title="${tag}">${word}</span> `;
+                    });
+                    
+                    resultContent.innerHTML = htmlContent;
+                    outputArea.style.display = 'block';
+                } else {
+                    errorMessage.textContent = `Error: ${result.error || 'Unknown error occurred'}`;
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Failed to connect to the server. Is the Flask app running?';
+                console.error('Fetch error:', error);
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Analyze Text';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fictometer ML</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            align-self: flex-start;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .result-box {
+            margin-top: 1rem;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .prediction-badge {
+            display: inline-block;
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .fiction {
+            background-color: #dbeafe;
+            color: #1e3a8a;
+        }
+
+        .non-fiction {
+            background-color: #dcfce7;
+            color: #14532d;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            background-color: #e2e8f0;
+            border-radius: 8px;
+            height: 20px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background-color: #007bff;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="/" class="back-link">&larr; Back to Dashboard</a>
+
+    <h1>📚 Fictometer ML</h1>
+    <p>Paste a paragraph of text below. Our trained Machine Learning model will analyze the vocabulary and semantic structure to predict whether the text is Fiction or Non-Fiction.</p>
+
+    <div class="container">
+        <label for="inputText"><strong>Enter text to analyze:</strong></label>
+        <textarea id="inputText" placeholder="e.g. 'The dragon soared over the mountains...' OR 'The stock market index dropped by 5%...'"></textarea>
+
+        <button id="analyzeBtn">Predict Genre</button>
+
+        <div id="errorMessage" class="error"></div>
+        
+        <div id="outputArea" style="display: none;">
+            <h3>AI Prediction:</h3>
+            <div class="result-box">
+                <div id="resBadge" class="prediction-badge"></div>
+                <p>Confidence: <strong id="resConfidence">0%</strong></p>
+                <div class="confidence-bar">
+                    <div id="resBar" class="confidence-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const inputText = document.getElementById('inputText');
+        const outputArea = document.getElementById('outputArea');
+        const errorMessage = document.getElementById('errorMessage');
+        const resBadge = document.getElementById('resBadge');
+        const resConfidence = document.getElementById('resConfidence');
+        const resBar = document.getElementById('resBar');
+
+        analyzeBtn.addEventListener('click', async () => {
+            const text = inputText.value.trim();
+
+            errorMessage.textContent = '';
+            outputArea.style.display = 'none';
+
+            if (!text) {
+                errorMessage.textContent = 'Please enter some text first.';
+                return;
+            }
+
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'Analyzing...';
+
+            try {
+                const response = await fetch('/api/v1/fictometer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    const data = result.data;
+                    
+                    if (data.prediction === "Model Missing") {
+                        errorMessage.innerHTML = "<strong>Error:</strong> The ML model file is missing. You need to run <code>python fictometer/scripts/trainmodel.py</code> in your terminal to train and generate the model first!";
+                        return;
+                    }
+
+                    resBadge.textContent = data.prediction;
+                    if (data.prediction === "Fiction") {
+                        resBadge.className = 'prediction-badge fiction';
+                        resBar.style.backgroundColor = '#3b82f6';
+                    } else {
+                        resBadge.className = 'prediction-badge non-fiction';
+                        resBar.style.backgroundColor = '#22c55e';
+                    }
+                    
+                    resConfidence.textContent = `${data.confidence}%`;
+                    resBar.style.width = `${data.confidence}%`;
+                    
+                    outputArea.style.display = 'block';
+                } else {
+                    errorMessage.textContent = `Error: ${result.error || 'Unknown error occurred'}`;
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Failed to connect to the server. Is the Flask app running?';
+                console.error('Fetch error:', error);
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Predict Genre';
+            }
+        });
+    </script>
+</body>
+</html>
