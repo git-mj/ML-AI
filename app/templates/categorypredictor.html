@@ -132,7 +132,7 @@
 
         <div class="elmo-note" id="elmoNote" style="display:none;">
             ⚠️ <strong>ELMo note:</strong> ELMo runs each word through a large neural network.
-            The first request after server restart may take 10–30 seconds while the model loads.
+            Use a trusted local ELMo model path, or explicitly enable remote model downloads for local development.
         </div>
 
         <label for="inputText"><strong>Enter text to classify:</strong></label>
@@ -208,7 +208,7 @@
                     const data = result.data;
 
                     if (data.category === 'Model Missing') {
-                        errorMessage.innerHTML = `<strong>Error:</strong> ${data.error || 'Run the training script first.'}`;
+                        errorMessage.textContent = `Error: ${data.error || 'Run the training script first.'}`;
                         return;
                     }
 

@@ -152,17 +152,21 @@
 
                 if (response.ok) {
                     const taggedWords = result.data.tagged_words;
-                    let htmlContent = '';
+                    resultContent.replaceChildren();
                     
                     taggedWords.forEach(item => {
                         const word = item[0];
                         const tag = item[1];
                         const category = item[2];
-                        
-                        htmlContent += `<span class="pos-${category}" title="${tag}">${word}</span> `;
+
+                        const span = document.createElement('span');
+                        span.className = `pos-${category}`;
+                        span.title = tag;
+                        span.textContent = word;
+                        resultContent.appendChild(span);
+                        resultContent.appendChild(document.createTextNode(' '));
                     });
-                    
-                    resultContent.innerHTML = htmlContent;
+
                     outputArea.style.display = 'block';
                 } else {
                     errorMessage.textContent = `Error: ${result.error || 'Unknown error occurred'}`;

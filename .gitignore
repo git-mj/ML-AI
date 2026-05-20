@@ -1,0 +1,16 @@
+.vscode/
+.venv/
+*/.venv/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environment files
+.env
+.env.*
+
+# Generated data and local model artifacts
+*.log
+*.tmp
+*.zip

@@ -1,9 +1,13 @@
+import os
+
 from app import create_app
 
 # Create the application instance using the factory
 app = create_app()
 
 if __name__ == "__main__":
-    # In development, we run with debug mode. 
-    # In production, this file is called by a WSGI server like Gunicorn.
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    host = os.getenv("FLASK_RUN_HOST", "127.0.0.1")
+    port = int(os.getenv("FLASK_RUN_PORT", "5000"))
+    debug = os.getenv("FLASK_DEBUG", "0").lower() in {"1", "true", "yes", "on"}
+
+    app.run(host=host, port=port, debug=debug)

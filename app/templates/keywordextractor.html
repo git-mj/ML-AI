@@ -156,21 +156,39 @@
 
                 if (response.ok) {
                     const keywords = result.data.keywords;
+                    resultContent.replaceChildren();
                     
                     if (keywords.length === 0) {
-                        resultContent.innerHTML = '<tr><td colspan="3" style="text-align: center;">No significant keywords found.</td></tr>';
+                        const row = document.createElement('tr');
+                        const cell = document.createElement('td');
+                        cell.colSpan = 3;
+                        cell.style.textAlign = 'center';
+                        cell.textContent = 'No significant keywords found.';
+                        row.appendChild(cell);
+                        resultContent.appendChild(row);
                     } else {
-                        let htmlContent = '';
                         keywords.forEach((item, index) => {
-                            htmlContent += `
-                                <tr>
-                                    <td>#${index + 1}</td>
-                                    <td style="font-weight: bold; color: #0f172a;">${item.keyword}</td>
-                                    <td><span style="background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 0.9em;">${item.count}</span></td>
-                                </tr>
-                            `;
+                            const row = document.createElement('tr');
+                            const rankCell = document.createElement('td');
+                            const keywordCell = document.createElement('td');
+                            const countCell = document.createElement('td');
+                            const countBadge = document.createElement('span');
+
+                            rankCell.textContent = `#${index + 1}`;
+                            keywordCell.textContent = item.keyword;
+                            keywordCell.style.fontWeight = 'bold';
+                            keywordCell.style.color = '#0f172a';
+
+                            countBadge.textContent = item.count;
+                            countBadge.style.background = '#e2e8f0';
+                            countBadge.style.padding = '2px 8px';
+                            countBadge.style.borderRadius = '12px';
+                            countBadge.style.fontSize = '0.9em';
+                            countCell.appendChild(countBadge);
+
+                            row.append(rankCell, keywordCell, countCell);
+                            resultContent.appendChild(row);
                         });
-                        resultContent.innerHTML = htmlContent;
                     }
                     outputArea.style.display = 'block';
                 } else {

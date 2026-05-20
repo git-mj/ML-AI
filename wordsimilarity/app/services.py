@@ -1,4 +1,6 @@
 import logging
+import os
+import threading
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -6,6 +8,8 @@ logger = logging.getLogger(__name__)
 
 class WordSimilarityService:
     elmo_model = None
+    _load_lock = threading.Lock()
+    _default_model_url = "https://tfhub.dev/google/elmo/3"
 
     @classmethod
     def load_model(cls):
@@ -19,11 +23,27 @@ class WordSimilarityService:
     @classmethod
     def _ensure_model(cls):
         """Lazily loads ELMo if not already loaded."""
-        if cls.elmo_model is None:
+        if cls.elmo_model is not None:
+            return None
+
+        with cls._load_lock:
+            if cls.elmo_model is not None:
+                return None
+
+            model_url = os.getenv("ELMO_MODEL_URL", cls._default_model_url)
+            allow_remote = os.getenv("ML_AI_ALLOW_REMOTE_MODEL_DOWNLOADS", "0").lower() in {"1", "true", "yes", "on"}
+            if model_url.startswith(("http://", "https://")) and not allow_remote:
+                return (
+                    "Remote ELMo model downloads are disabled. Set ELMO_MODEL_URL "
+                    "to a trusted local TensorFlow Hub model path, or set "
+                    "ML_AI_ALLOW_REMOTE_MODEL_DOWNLOADS=1 for local development."
+                )
+
             import tensorflow_hub as hub
             print("Loading ELMo for Word Similarity (one-time download)...")
-            cls.elmo_model = hub.load("https://tfhub.dev/google/elmo/3").signatures["default"]
+            cls.elmo_model = hub.load(model_url).signatures["default"]
             print("Word Similarity ELMo model loaded.")
+            return None
 
     @classmethod
     def _tokenize(cls, text: str) -> list:
@@ -40,9 +60,9 @@ class WordSimilarityService:
 
         Returns a dict with the similarity score and metadata.
         """
-        import tensorflow as tf
-
-        cls._ensure_model()
+        load_error = cls._ensure_model()
+        if load_error:
+            return {"error": load_error, "similarity": None}
 
         word_target = word.lower().strip()
         tokens1 = cls._tokenize(sentence1)
@@ -61,6 +81,8 @@ class WordSimilarityService:
 
         idx1 = tokens1.index(word_target)
         idx2 = tokens2.index(word_target)
+
+        import tensorflow as tf
 
         input_tensor = tf.constant([sentence1, sentence2])
         result = cls.elmo_model(input_tensor)

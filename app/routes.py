@@ -1,6 +1,14 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, render_template
 from .services import CountService
-from .utils import sanitize_text, api_error_response, api_success_response
+from .utils import (
+    MAX_SENTENCE_CHARS,
+    MAX_TEXT_CHARS,
+    api_error_response,
+    api_success_response,
+    get_json_body,
+    require_text_field,
+    sanitize_text,
+)
 from posvisualizer.app.services import POSService
 from keywordextractor.app.services import KeywordExtractorService
 from intentdetector.app.services import IntentDetectorService
@@ -57,15 +65,15 @@ def categorypredictor():
 
 @main_bp.route('/api/v1/category_predict', methods=['POST'])
 def category_predict():
-    if not request.is_json:
-        return api_error_response("Content-Type must be application/json", 415)
+    data, error = get_json_body(request)
+    if error:
+        return error
 
-    data = request.get_json()
-    raw_text  = data.get('text')
+    raw_text, error = require_text_field(data)
+    if error:
+        return error
+
     embedding = data.get('embedding', 'word2vec')  # 'word2vec' or 'elmo'
-
-    if not raw_text or not isinstance(raw_text, str):
-        return api_error_response("A valid 'text' string is required.", 400)
 
     if embedding not in ('word2vec', 'elmo'):
         return api_error_response("embedding must be 'word2vec' or 'elmo'.", 400)
@@ -81,16 +89,22 @@ def category_predict():
 
 @main_bp.route('/api/v1/word_similarity', methods=['POST'])
 def word_similarity():
-    if not request.is_json:
-        return api_error_response("Content-Type must be application/json", 415)
+    data, error = get_json_body(request)
+    if error:
+        return error
 
-    data = request.get_json()
-    sentence1 = data.get('sentence1', '').strip()
-    sentence2 = data.get('sentence2', '').strip()
-    word      = data.get('word', '').strip()
+    sentence1, error = require_text_field(data, 'sentence1', MAX_SENTENCE_CHARS)
+    if error:
+        return error
+    sentence2, error = require_text_field(data, 'sentence2', MAX_SENTENCE_CHARS)
+    if error:
+        return error
+    word, error = require_text_field(data, 'word', 100)
+    if error:
+        return error
 
-    if not sentence1 or not sentence2 or not word:
-        return api_error_response("'sentence1', 'sentence2', and 'word' are all required.", 400)
+    if any(char.isspace() for char in word):
+        return api_error_response("'word' must be a single token.", 400)
 
     try:
         result = WordSimilarityService.calculate_similarity(sentence1, sentence2, word)
@@ -103,15 +117,15 @@ def word_similarity():
 
 @main_bp.route('/api/v1/spamclassifier', methods=['POST'])
 def classify_spam():
-    if not request.is_json:
-        return api_error_response("Content-Type must be application/json", 415)
-    
-    data = request.get_json()
-    raw_text = data.get('text')
-    algorithm = data.get('algorithm', 'lr')  # default to Logistic Regression
+    data, error = get_json_body(request)
+    if error:
+        return error
 
-    if not raw_text or not isinstance(raw_text, str):
-        return api_error_response("A valid 'text' string is required.", 400)
+    raw_text, error = require_text_field(data)
+    if error:
+        return error
+
+    algorithm = data.get('algorithm', 'lr')  # default to Logistic Regression
 
     if algorithm not in ('lr', 'nb'):
         return api_error_response("Algorithm must be 'lr' or 'nb'.", 400)
@@ -127,14 +141,13 @@ def classify_spam():
 
 @main_bp.route('/api/v1/extract_keywords', methods=['POST'])
 def extract_keywords():
-    if not request.is_json:
-        return api_error_response("Content-Type must be application/json", 415)
-    
-    data = request.get_json()
-    raw_text = data.get('text')
+    data, error = get_json_body(request)
+    if error:
+        return error
 
-    if not raw_text or not isinstance(raw_text, str):
-        return api_error_response("A valid 'text' string is required.", 400)
+    raw_text, error = require_text_field(data)
+    if error:
+        return error
 
     clean_text = sanitize_text(raw_text)
 
@@ -147,14 +160,13 @@ def extract_keywords():
 
 @main_bp.route('/api/v1/analyze_pos', methods=['POST'])
 def analyze_pos():
-    if not request.is_json:
-        return api_error_response("Content-Type must be application/json", 415)
-    
-    data = request.get_json()
-    raw_text = data.get('text')
+    data, error = get_json_body(request)
+    if error:
+        return error
 
-    if not raw_text or not isinstance(raw_text, str):
-        return api_error_response("A valid 'text' string is required.", 400)
+    raw_text, error = require_text_field(data)
+    if error:
+        return error
 
     clean_text = sanitize_text(raw_text)
 
@@ -167,14 +179,13 @@ def analyze_pos():
 
 @main_bp.route('/api/v1/detect_intent', methods=['POST'])
 def detect_intent():
-    if not request.is_json:
-        return api_error_response("Content-Type must be application/json", 415)
-    
-    data = request.get_json()
-    raw_text = data.get('text')
+    data, error = get_json_body(request)
+    if error:
+        return error
 
-    if not raw_text or not isinstance(raw_text, str):
-        return api_error_response("A valid 'text' string is required.", 400)
+    raw_text, error = require_text_field(data)
+    if error:
+        return error
 
     clean_text = sanitize_text(raw_text)
 
@@ -187,14 +198,13 @@ def detect_intent():
 
 @main_bp.route('/api/v1/chat_admission', methods=['POST'])
 def chat_admission():
-    if not request.is_json:
-        return api_error_response("Content-Type must be application/json", 415)
-    
-    data = request.get_json()
-    raw_text = data.get('text')
+    data, error = get_json_body(request)
+    if error:
+        return error
 
-    if not raw_text or not isinstance(raw_text, str):
-        return api_error_response("A valid 'text' string is required.", 400)
+    raw_text, error = require_text_field(data)
+    if error:
+        return error
 
     clean_text = sanitize_text(raw_text)
 
@@ -207,14 +217,13 @@ def chat_admission():
 
 @main_bp.route('/api/v1/fictometer', methods=['POST'])
 def analyze_fictometer():
-    if not request.is_json:
-        return api_error_response("Content-Type must be application/json", 415)
-    
-    data = request.get_json()
-    raw_text = data.get('text')
+    data, error = get_json_body(request)
+    if error:
+        return error
 
-    if not raw_text or not isinstance(raw_text, str):
-        return api_error_response("A valid 'text' string is required.", 400)
+    raw_text, error = require_text_field(data)
+    if error:
+        return error
 
     clean_text = sanitize_text(raw_text)
 
@@ -227,20 +236,16 @@ def analyze_fictometer():
 
 @main_bp.route('/api/v1/counts', methods=['POST'])
 def counts():
-    if not request.is_json:
-        return api_error_response("Content-Type must be application/json", 415)
-    
-    data = request.get_json()
-    raw_text = data.get('text')
+    data, error = get_json_body(request)
+    if error:
+        return error
 
-    if not raw_text or not isinstance(raw_text, str):
-        return api_error_response("A valid 'text' string is required.", 400)
+    raw_text, error = require_text_field(data, max_length=MAX_TEXT_CHARS)
+    if error:
+        return error
 
     # 1. Clean the text using our utility function
     clean_text = sanitize_text(raw_text)
-
-    if len(clean_text) > 50000:
-        return api_error_response("Text payload exceeds the maximum allowed length.", 413)
 
     try:
         # 2. Process the text

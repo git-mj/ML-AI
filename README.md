@@ -119,7 +119,15 @@ pip install -r intentdetector/requirements.txt
 python run.py
 ```
 
-The app will start at **http://localhost:5000** in debug mode.
+The app starts at **http://127.0.0.1:5000** by default with debug mode disabled.
+
+Optional local development settings:
+```bash
+set FLASK_DEBUG=1
+set FLASK_RUN_HOST=127.0.0.1
+set FLASK_RUN_PORT=5000
+python run.py
+```
 
 > **Note:** On first startup, NLTK resources (Brown Corpus, stopwords, averaged perceptron tagger) will be downloaded automatically.
 
@@ -149,7 +157,7 @@ python categorypredictor/scripts/trainmodel_word2vec.py
 ```bash
 python categorypredictor/scripts/trainmodel_elmo.py
 ```
-> ⚠️ ELMo requires downloading a ~350 MB model from TensorFlow Hub on first run.
+> ELMo should use a trusted local TensorFlow Hub model path in normal use. Set `ELMO_MODEL_URL` to that local path. For local experimentation only, set `ML_AI_ALLOW_REMOTE_MODEL_DOWNLOADS=1` to allow downloading from TensorFlow Hub during a request.
 
 ---
 

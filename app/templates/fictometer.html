@@ -173,7 +173,7 @@
                     const data = result.data;
                     
                     if (data.prediction === "Model Missing") {
-                        errorMessage.innerHTML = "<strong>Error:</strong> The ML model file is missing. You need to run <code>python fictometer/scripts/trainmodel.py</code> in your terminal to train and generate the model first!";
+                        errorMessage.textContent = "Error: The ML model file is missing. Run python fictometer/scripts/trainmodel.py to train and generate it.";
                         return;
                     }
 

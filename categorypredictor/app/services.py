@@ -1,5 +1,6 @@
 import os
 import string
+import threading
 import numpy as np
 import joblib
 
@@ -13,6 +14,8 @@ class CategoryPredictorService:
     elmo_hub_model = None  # TF Hub ELMo
     elmo_ann = None        # Keras ANN
     elmo_encoder = None    # sklearn LabelEncoder
+    _elmo_load_lock = threading.Lock()
+    _default_elmo_url = "https://tfhub.dev/google/elmo/3"
 
     @classmethod
     def _model_dir(cls):
@@ -55,23 +58,35 @@ class CategoryPredictorService:
     def _load_elmo(cls):
         """Lazily load ELMo from TF Hub on first use."""
         try:
-            import tensorflow_hub as hub
-            from tensorflow import keras
+            with cls._elmo_load_lock:
+                import tensorflow_hub as hub
+                from tensorflow import keras
 
-            d = cls._model_dir()
-            ann_path = os.path.join(d, 'elmo_ann.keras')
-            enc_path = os.path.join(d, 'elmo_label_encoder.joblib')
+                d = cls._model_dir()
+                ann_path = os.path.join(d, 'elmo_ann.keras')
+                enc_path = os.path.join(d, 'elmo_label_encoder.joblib')
 
-            if not all(os.path.exists(p) for p in [ann_path, enc_path]):
-                return False, "ELMo model files not found. Run trainmodel_elmo.py first."
+                if not all(os.path.exists(p) for p in [ann_path, enc_path]):
+                    return False, "ELMo model files not found. Run trainmodel_elmo.py first."
 
-            if cls.elmo_hub_model is None:
-                print("Loading ELMo from TensorFlow Hub (one-time)...")
-                cls.elmo_hub_model = hub.load("https://tfhub.dev/google/elmo/3")
+                model_url = os.getenv("ELMO_MODEL_URL", cls._default_elmo_url)
+                allow_remote = os.getenv("ML_AI_ALLOW_REMOTE_MODEL_DOWNLOADS", "0").lower() in {"1", "true", "yes", "on"}
+                if model_url.startswith(("http://", "https://")) and not allow_remote:
+                    return False, (
+                        "Remote ELMo model downloads are disabled. Set ELMO_MODEL_URL "
+                        "to a trusted local TensorFlow Hub model path, or set "
+                        "ML_AI_ALLOW_REMOTE_MODEL_DOWNLOADS=1 for local development."
+                    )
 
-            cls.elmo_ann     = keras.models.load_model(ann_path)
-            cls.elmo_encoder = joblib.load(enc_path)
-            return True, "ok"
+                if cls.elmo_hub_model is None:
+                    print("Loading ELMo from TensorFlow Hub (one-time)...")
+                    cls.elmo_hub_model = hub.load(model_url)
+
+                if cls.elmo_ann is None:
+                    cls.elmo_ann = keras.models.load_model(ann_path)
+                if cls.elmo_encoder is None:
+                    cls.elmo_encoder = joblib.load(enc_path)
+                return True, "ok"
         except Exception as e:
             return False, str(e)
 

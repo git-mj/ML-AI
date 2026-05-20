@@ -206,7 +206,7 @@
                     const data = result.data;
 
                     if (data.prediction === "Model Missing") {
-                        errorMessage.innerHTML = "<strong>Error:</strong> The ML model file is missing. Run <code>python spamclassifier/scripts/trainmodel.py</code> first!";
+                        errorMessage.textContent = "Error: The ML model file is missing. Run python spamclassifier/scripts/trainmodel.py first.";
                         return;
                     }
 
